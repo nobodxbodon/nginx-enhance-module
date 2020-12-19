@@ -10,111 +10,111 @@ parser.add_argument('-m', '--module', dest='module', type=str,nargs='*', help='S
 args = parser.parse_args()
 
 if args.module != None:
-    enable_modules = args.module
+    有效模块 = args.module
 
 print(args.module)
 
-pwd = os.getcwd()
+当前目录 = os.getcwd()
 
-yaml_file = 'modules.yaml'
-temp_dir = 'tmp'
+yaml文件 = 'modules.yaml'
+临时目录 = 'tmp'
 
-def read_conf(file):
-    fs = open(file,'r',encoding='utf-8')
-    datas = yaml.load(fs,Loader=yaml.SafeLoader) 
-    return datas
+def 读取配置(名称):
+    文件 = open(名称,'r',encoding='utf-8')
+    数据 = yaml.load(文件,Loader=yaml.SafeLoader)
+    return 数据
 
-def processing(module,conf):
-    if args.module != None and module not in enable_modules:
-        print(f'I: Module {module} is not enabled, skip')
+def 处理(模块,配置):
+    if args.module != None and 模块 not in 有效模块:
+        print(f'I: Module {模块} is not enabled, skip')
         return None
-    if 'type' not in conf:
-        print(f'E: Module {module} is missing the type field, skip')
+    if 'type' not in 配置:
+        print(f'E: Module {模块} is missing the type field, skip')
         return
-    if 'mode' not in conf:
-        print(f'E: Module {module} is missing the mode field, skip')
+    if 'mode' not in 配置:
+        print(f'E: Module {模块} is missing the mode field, skip')
         return
-    type = conf['type']
-    mode = conf['mode']
-    print(f'I: {module} is the {type} type')
-    print(f'I: {module} uses {mode} method to obtain')
-    if mode == 'git_repo':
-        if 'git_repo' not in conf:
-            print(f'E: Module {module} is missing the download git_repo field, skip')
+    类型 = 配置['type']
+    模式 = 配置['mode']
+    print(f'I: {模块} is the {类型} type')
+    print(f'I: {模块} uses {模式} method to obtain')
+    if 模式 == 'git_repo':
+        if 'git_repo' not in 配置:
+            print(f'E: Module {模块} is missing the download git_repo field, skip')
             return
-        if 'paths' not in conf:
-            print(f'E: Module {module} is missing the download paths field, skip')
+        if 'paths' not in 配置:
+            print(f'E: Module {模块} is missing the download paths field, skip')
             return
-        repo = conf['git_repo']
-        paths = conf['paths']
-        print(f'I: Module {module} performs cloning {pwd}/{temp_dir}/{type}/{module}')
-        if os.system(f'git clone --recurse-submodules {repo} {pwd}/{temp_dir}/{type}/{module}'):
-            print(f'E: Module {module} Execution command error, termination')
+        源码库 = 配置['git_repo']
+        各路径 = 配置['paths']
+        print(f'I: Module {模块} performs cloning {当前目录}/{临时目录}/{类型}/{模块}')
+        if os.system(f'git clone --recurse-submodules {源码库} {当前目录}/{临时目录}/{类型}/{模块}'):
+            print(f'E: Module {模块} Execution command error, termination')
             sys.exit(1)
         else:
-            if type == 'modules':
-                for path in paths:
-                    full_src_path = f'{pwd}/{temp_dir}/{type}/{module}/{path}/*'
-                    full_dest_path = f'{pwd}/{type}/{module}/'
-                    print(f'I: Module {module} copy {full_src_path} to {full_dest_path} ')
-                    if os.system(f'mkdir -p {full_dest_path} && cp -r {full_src_path} {full_dest_path}'):
-                        print(f'E: Module {module} Execution command error, termination')
+            if 类型 == 'modules':
+                for 某路径 in 各路径:
+                    源码路径 = f'{当前目录}/{临时目录}/{类型}/{模块}/{某路径}/*'
+                    目标路径 = f'{当前目录}/{类型}/{模块}/'
+                    print(f'I: Module {模块} copy {源码路径} to {目标路径} ')
+                    if os.system(f'mkdir -p {目标路径} && cp -r {源码路径} {目标路径}'):
+                        print(f'E: Module {模块} Execution command error, termination')
                         sys.exit(1)
             else:
-                print(f'E: Modules {module} not support {type} type')
+                print(f'E: Modules {模块} not support {类型} type')
                 sys.exit(1)
-    elif mode == 'wget':
-        if 'wget' not in conf:
-            print(f'E: Module {module} is missing the download wget field, skip')
+    elif 模式 == 'wget':
+        if 'wget' not in 配置:
+            print(f'E: Module {模块} is missing the download wget field, skip')
             return
-        if 'filename' not in conf:
-            print(f'E: Module {module} is missing the download filename field, skip')
+        if 'filename' not in 配置:
+            print(f'E: Module {模块} is missing the download filename field, skip')
             return
-        if 'dest' not in conf:
-            print(f'E: Module {module} is missing the download dest field, skip')
+        if 'dest' not in 配置:
+            print(f'E: Module {模块} is missing the download dest field, skip')
             return
-        download_url = conf['wget']
-        filename = conf['filename']
-        desk_file = conf['dest']
-        print(f'I: Module {module} performs download {pwd}/{temp_dir}/{type}/{filename}')
-        if os.system(f'wget {download_url} -P {pwd}/{temp_dir}/{type}'):
-            print(f'E: Module {module} Execution command error, termination')
+        下载路径 = 配置['wget']
+        文件名称 = 配置['filename']
+        目标文件 = 配置['dest']
+        print(f'I: Module {模块} performs download {当前目录}/{临时目录}/{类型}/{文件名称}')
+        if os.system(f'wget {下载路径} -P {当前目录}/{临时目录}/{类型}'):
+            print(f'E: Module {模块} Execution command error, termination')
             sys.exit(1)
         else:
-            print(f'Module {module} Start unpacking Tar.gz')
-            if os.system(f'mkdir -p {pwd}/{temp_dir}/{type}/{module} && tar xvf {pwd}/{temp_dir}/{type}/{filename} -C {pwd}/{temp_dir}/{type}/{module}'):
-                print(f'E: Module {module} Execution command error, termination')
+            print(f'Module {模块} Start unpacking Tar.gz')
+            if os.system(f'mkdir -p {当前目录}/{临时目录}/{类型}/{模块} && tar xvf {当前目录}/{临时目录}/{类型}/{文件名称} -C {当前目录}/{临时目录}/{类型}/{模块}'):
+                print(f'E: Module {模块} Execution command error, termination')
                 sys.exit(1)
-            if type == 'depends':
-                full_src_path = f'{pwd}/{temp_dir}/{type}/{module}'
-                full_dest_path = f'{pwd}/{desk_file}/{type}/{module}'
-                print(f'I: Module {module} copy {full_src_path} to {full_dest_path} ')
-                if os.system(f'mkdir -p {full_dest_path} && cp -r {full_src_path} {full_dest_path}'):
-                        print(f'E: Module {module} Execution command error, termination')
+            if 类型 == 'depends':
+                源码路径 = f'{当前目录}/{临时目录}/{类型}/{模块}'
+                目标路径 = f'{当前目录}/{目标文件}/{类型}/{模块}'
+                print(f'I: Module {模块} copy {源码路径} to {目标路径} ')
+                if os.system(f'mkdir -p {目标路径} && cp -r {源码路径} {目标路径}'):
+                        print(f'E: Module {模块} Execution command error, termination')
                         sys.exit(1)
             else:
-                print(f'E: Modules {module} not support {type} type')
+                print(f'E: Modules {模块} not support {类型} type')
                 sys.exit(1)
 if __name__ == '__main__':
     print('I: Check the temporary folder')
-    if not os.path.exists(f'{pwd}/{temp_dir}'):
+    if not os.path.exists(f'{当前目录}/{临时目录}'):
         print('I: Temporary folder does not exist, create now')
-        os.mkdir(f'{pwd}/{temp_dir}')
-        print('I: Temporary folder does not exist, creation' + f' {pwd}/{temp_dir}' + ' is complete')
+        os.mkdir(f'{当前目录}/{临时目录}')
+        print('I: Temporary folder does not exist, creation' + f' {当前目录}/{临时目录}' + ' is complete')
         print('I: Check the temporary modules folder')
-        if not os.path.exists(f'{pwd}/{temp_dir}/modules'):
+        if not os.path.exists(f'{当前目录}/{临时目录}/modules'):
             print('I: Temporary modules folder does not exist, create now')
-            os.mkdir(f'{pwd}/{temp_dir}/modules')
-            print('I: Temporary modules folder does not exist, creation' + f' {pwd}/{temp_dir}/modules' + ' is complete')
+            os.mkdir(f'{当前目录}/{临时目录}/modules')
+            print('I: Temporary modules folder does not exist, creation' + f' {当前目录}/{临时目录}/modules' + ' is complete')
         print('I: Check the temporary depend folder')
-        if not os.path.exists(f'{pwd}/{temp_dir}/depend'):
+        if not os.path.exists(f'{当前目录}/{临时目录}/depend'):
             print('I: Temporary depend folder does not exist, create now')
-            os.mkdir(f'{pwd}/{temp_dir}/depend')
-            print('I: Temporary depend folder does not exist, creation' + f' {pwd}/{temp_dir}/depend' + ' is complete')
+            os.mkdir(f'{当前目录}/{临时目录}/depend')
+            print('I: Temporary depend folder does not exist, creation' + f' {当前目录}/{临时目录}/depend' + ' is complete')
         
-    yaml_data = read_conf(f'{pwd}/{yaml_file}')
-    if yaml_data:
-        for module,conf in yaml_data.items():
-            print(f'I: Start processing {module} module')
-            processing(module,conf)
-            print(f'I: Module {module} is processed')
+    yaml数据 = 读取配置(f'{当前目录}/{yaml文件}')
+    if yaml数据:
+        for 模块,配置 in yaml数据.items():
+            print(f'I: Start processing {模块} 模块')
+            处理(模块,配置)
+            print(f'I: Module {模块} is processed')
